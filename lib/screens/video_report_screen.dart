@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:provider/provider.dart';
 import 'dart:async'; // ADD THIS IMPORT
-import 'package:latlong2/latlong.dart'; // ADD THIS IMPORT
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/crime_data_provider.dart';
 import '../services/video_service.dart';
 import '../models/video_report.dart';

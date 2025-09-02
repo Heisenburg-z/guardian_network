@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import '../models/crime_data_provider.dart';
-import '../models/crime_incident.dart';
 import '../models/crime_incident.dart';
 
 class ReportIncidentSheet extends StatefulWidget {

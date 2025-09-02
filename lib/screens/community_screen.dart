@@ -6,7 +6,7 @@ import '../models/crime_incident.dart';
 import 'incident_detail_screen.dart';
 import '../components/incident_card.dart';
 import '../components/comment_card.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});

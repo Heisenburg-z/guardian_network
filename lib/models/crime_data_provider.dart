@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:math' as math;
 import 'crime_incident.dart';
 import 'video_report.dart';
@@ -233,3 +233,49 @@ class CrimeDataProvider extends ChangeNotifier {
     return _demoUsers.firstWhere((user) => user.id == userId);
   }
 }
+
+//
+// // Add these placeholder classes to fix compilation errors
+// class IncidentComment {
+//   final String id;
+//   final String incidentId;
+//   final String userId;
+//   final String userDisplayName;
+//   final String content;
+//   final DateTime timestamp;
+//   final int upvotes;
+//   final int downvotes;
+//   final List<String> likedBy;
+//   final List<String> dislikedBy;
+//
+//   IncidentComment({
+//     required this.id,
+//     required this.incidentId,
+//     required this.userId,
+//     required this.userDisplayName,
+//     required this.content,
+//     required this.timestamp,
+//     this.upvotes = 0,
+//     this.downvotes = 0,
+//     this.likedBy = const [],
+//     this.dislikedBy = const [],
+//   });
+// }
+//
+// class AppUser {
+//   final String id;
+//   final String? email;
+//   final String displayName;
+//   final DateTime joinDate;
+//   final bool isVerified;
+//   final int contributionScore;
+//
+//   AppUser({
+//     required this.id,
+//     this.email,
+//     required this.displayName,
+//     required this.joinDate,
+//     this.isVerified = false,
+//     this.contributionScore = 0,
+//   });
+// }

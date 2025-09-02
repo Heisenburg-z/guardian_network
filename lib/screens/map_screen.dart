@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
+import 'package:geolocator/geolocator.dart';
 import '../models/crime_data_provider.dart';
 import '../models/crime_incident.dart';
-import '../components/crime_marker.dart';
 import '../components/report_incident_sheet.dart';
 import '../components/sos_button.dart';
 import '../services/location_service.dart';
@@ -21,14 +20,24 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen>
     with SingleTickerProviderStateMixin {
-  final MapController _mapController = MapController();
+  Completer<GoogleMapController> _mapController = Completer();
   Timer? _alertCheckTimer;
   LatLng? _currentLocation;
   final LocationService _locationService = LocationService();
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
-  final LatLng _initialCenter = const LatLng(-26.2041, 28.0473); // Johannesburg
+  // Google Maps initial position
+  final CameraPosition _initialCameraPosition = const CameraPosition(
+    target: LatLng(-26.2041, 28.0473), // Johannesburg
+    zoom: 12.0,
+  );
+
+  // Map objects
+  Set<Marker> _markers = {};
+  Set<Circle> _circles = {};
+  Set<Polygon> _polygons = {};
+  bool _showHeatmap = true;
 
   @override
   void initState() {
@@ -99,7 +108,15 @@ class _MapScreenState extends State<MapScreen>
 
   void _zoomToThreats() {
     if (_currentLocation != null) {
-      _mapController.move(_currentLocation!, 15.0);
+      final controller = _mapController.future;
+      controller.then((googleMapController) {
+        googleMapController.animateCamera(
+          CameraUpdate.newLatLngZoom(
+            LatLng(_currentLocation!.latitude, _currentLocation!.longitude),
+            15.0,
+          ),
+        );
+      });
     }
   }
 
@@ -110,9 +127,30 @@ class _MapScreenState extends State<MapScreen>
         setState(() {
           _currentLocation = LatLng(position.latitude, position.longitude);
         });
+        _updateUserLocationMarker();
       }
     } catch (e) {
       // Handle error silently for hackathon demo
+    }
+  }
+
+  void _updateUserLocationMarker() {
+    if (_currentLocation != null) {
+      setState(() {
+        _markers.removeWhere(
+          (marker) => marker.markerId.value == 'user_location',
+        );
+        _markers.add(
+          Marker(
+            markerId: MarkerId('user_location'),
+            position: _currentLocation!,
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor.hueBlue,
+            ),
+            infoWindow: InfoWindow(title: 'Your Location'),
+          ),
+        );
+      });
     }
   }
 
@@ -150,10 +188,11 @@ class _MapScreenState extends State<MapScreen>
     );
   }
 
-  void _showHeatmapToggle() {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Heatmap view toggled')));
+  void _toggleHeatmap() {
+    setState(() {
+      _showHeatmap = !_showHeatmap;
+    });
+    _updateCrimeData();
   }
 
   void _showTimeFilter() {
@@ -172,6 +211,7 @@ class _MapScreenState extends State<MapScreen>
                   listen: false,
                 ).setTimeFilter(TimeFilter.day);
                 Navigator.of(context).pop();
+                _updateCrimeData();
               },
             ),
             ListTile(
@@ -182,6 +222,7 @@ class _MapScreenState extends State<MapScreen>
                   listen: false,
                 ).setTimeFilter(TimeFilter.week);
                 Navigator.of(context).pop();
+                _updateCrimeData();
               },
             ),
             ListTile(
@@ -192,12 +233,147 @@ class _MapScreenState extends State<MapScreen>
                   listen: false,
                 ).setTimeFilter(TimeFilter.month);
                 Navigator.of(context).pop();
+                _updateCrimeData();
               },
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _updateCrimeData() {
+    final crimeData = Provider.of<CrimeDataProvider>(context, listen: false);
+    _createCrimeMarkers(crimeData.filteredIncidents);
+    if (_showHeatmap) {
+      _createHeatmap(crimeData.filteredIncidents);
+    } else {
+      setState(() {
+        _circles.clear();
+      });
+    }
+  }
+
+  void _createCrimeMarkers(List<CrimeIncident> incidents) {
+    Set<Marker> newMarkers = {};
+
+    for (var incident in incidents) {
+      final markerId = MarkerId(incident.id);
+      final markerColor = _getMarkerColor(incident.severity);
+
+      newMarkers.add(
+        Marker(
+          markerId: markerId,
+          position: LatLng(
+            incident.location.latitude,
+            incident.location.longitude,
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(markerColor),
+          infoWindow: InfoWindow(
+            title: incident.type,
+            snippet:
+                'Severity: ${incident.severity.toString().split('.').last}',
+          ),
+          onTap: () => _showIncidentDetails(incident),
+        ),
+      );
+    }
+
+    setState(() {
+      _markers.removeWhere(
+        (marker) => marker.markerId.value != 'user_location',
+      );
+      _markers.addAll(newMarkers);
+    });
+  }
+
+  double _getMarkerColor(CrimeSeverity severity) {
+    switch (severity) {
+      case CrimeSeverity.high:
+        return BitmapDescriptor.hueRed;
+      case CrimeSeverity.medium:
+        return BitmapDescriptor.hueOrange;
+      case CrimeSeverity.low:
+        return BitmapDescriptor.hueYellow;
+    }
+  }
+
+  void _createHeatmap(List<CrimeIncident> incidents) {
+    Set<Circle> newCircles = {};
+
+    for (var incident in incidents) {
+      final circleId = CircleId(incident.id);
+      final circleColor = _getCircleColor(incident.severity);
+
+      newCircles.add(
+        Circle(
+          circleId: circleId,
+          center: LatLng(
+            incident.location.latitude,
+            incident.location.longitude,
+          ),
+          radius: 100, // meters
+          fillColor: circleColor.withOpacity(0.3),
+          strokeColor: circleColor,
+          strokeWidth: 1,
+        ),
+      );
+    }
+
+    setState(() {
+      _circles = newCircles;
+    });
+  }
+
+  Color _getCircleColor(CrimeSeverity severity) {
+    switch (severity) {
+      case CrimeSeverity.high:
+        return Colors.red;
+      case CrimeSeverity.medium:
+        return Colors.orange;
+      case CrimeSeverity.low:
+        return Colors.yellow;
+    }
+  }
+
+  void _showIncidentDetails(CrimeIncident incident) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(incident.type),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Time: ${_formatTime(incident.timestamp)}'),
+            Text(
+              'Severity: ${incident.severity.toString().split('.').last.toUpperCase()}',
+            ),
+            if (incident.description.isNotEmpty)
+              Text('Description: ${incident.description}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatTime(DateTime time) {
+    final now = DateTime.now();
+    final difference = now.difference(time);
+
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h ago';
+    } else {
+      return '${difference.inDays}d ago';
+    }
   }
 
   void _triggerSOS() {
@@ -229,12 +405,19 @@ class _MapScreenState extends State<MapScreen>
           description: 'SOS button activated',
         ),
       );
+      _updateCrimeData();
     }
   }
 
-  void _goToMyLocation() {
+  void _goToMyLocation() async {
     if (_currentLocation != null) {
-      _mapController.move(_currentLocation!, 16.0);
+      final controller = await _mapController.future;
+      controller.animateCamera(
+        CameraUpdate.newLatLngZoom(
+          LatLng(_currentLocation!.latitude, _currentLocation!.longitude),
+          16.0,
+        ),
+      );
     } else {
       _getCurrentLocation();
     }
@@ -255,8 +438,8 @@ class _MapScreenState extends State<MapScreen>
         foregroundColor: Colors.white,
         actions: [
           IconButton(
-            icon: Icon(Icons.layers),
-            onPressed: _showHeatmapToggle,
+            icon: Icon(_showHeatmap ? Icons.layers : Icons.layers_clear),
+            onPressed: _toggleHeatmap,
             tooltip: 'Toggle Heatmap',
           ),
           IconButton(
@@ -268,45 +451,31 @@ class _MapScreenState extends State<MapScreen>
       ),
       body: Consumer<CrimeDataProvider>(
         builder: (context, crimeData, child) {
+          // Update markers when data changes
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _createCrimeMarkers(crimeData.filteredIncidents);
+            if (_showHeatmap) {
+              _createHeatmap(crimeData.filteredIncidents);
+            }
+          });
+
           return Stack(
             children: [
-              FlutterMap(
-                mapController: _mapController,
-                options: MapOptions(
-                  initialCenter: _currentLocation ?? _initialCenter,
-                  initialZoom: 12.0,
-                  onTap: (TapPosition tapPosition, LatLng point) {
-                    _reportIncident(point);
-                  },
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate:
-                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.guardian.network',
-                  ),
-                  MarkerLayer(
-                    markers: _buildCrimeMarkers(crimeData.filteredIncidents),
-                  ),
-                  if (_currentLocation != null)
-                    MarkerLayer(
-                      markers: [
-                        Marker(
-                          point: _currentLocation!,
-                          width: 40,
-                          height: 40,
-                          child: ScaleTransition(
-                            scale: _pulseAnimation,
-                            child: Icon(
-                              Icons.location_pin,
-                              color: AppTheme.primaryColor,
-                              size: 40,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
+              GoogleMap(
+                onMapCreated: (GoogleMapController controller) {
+                  _mapController.complete(controller);
+                  _updateCrimeData();
+                },
+                initialCameraPosition: _initialCameraPosition,
+                markers: _markers,
+                circles: _circles,
+                polygons: _polygons,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: false,
+                onTap: (LatLng position) {
+                  _reportIncident(position);
+                },
+                mapType: MapType.normal,
               ),
               Positioned(
                 bottom: 100,
@@ -342,16 +511,5 @@ class _MapScreenState extends State<MapScreen>
         },
       ),
     );
-  }
-
-  List<Marker> _buildCrimeMarkers(List<CrimeIncident> incidents) {
-    return incidents.map((incident) {
-      return Marker(
-        point: incident.location,
-        width: 40,
-        height: 40,
-        child: CrimeMarker(incident: incident),
-      );
-    }).toList();
   }
 }
