@@ -120,27 +120,24 @@ class _MapScreenState extends State<MapScreen>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (context) => ReportIncidentSheet(location: location),
     );
   }
 
-  void _showHeatmapToggle() {
-    // For hackathon demo - toggle between different visualizations
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Heatmap view toggled'),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-  }
+  void _openVideoReport() {
+    if (_currentLocation == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Waiting for location...')));
+      return;
+    }
 
-  void _showTimeFilter() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.85,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.only(
@@ -148,32 +145,27 @@ class _MapScreenState extends State<MapScreen>
             topRight: Radius.circular(20),
           ),
         ),
-        child: Column(
+        child: VideoReportScreen(location: _currentLocation!),
+      ),
+    );
+  }
+
+  void _showHeatmapToggle() {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Heatmap view toggled')));
+  }
+
+  void _showTimeFilter() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Time Filter'),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: 16),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[400],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Time Filter',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Poppins',
-              ),
-            ),
-            SizedBox(height: 16),
-            Divider(height: 1),
             ListTile(
-              leading: Icon(Icons.today, color: AppTheme.primaryColor),
-              title: Text('Last 24 hours'),
+              title: const Text('Last 24 hours'),
               onTap: () {
                 Provider.of<CrimeDataProvider>(
                   context,
@@ -183,8 +175,7 @@ class _MapScreenState extends State<MapScreen>
               },
             ),
             ListTile(
-              leading: Icon(Icons.date_range, color: AppTheme.primaryColor),
-              title: Text('Last week'),
+              title: const Text('Last week'),
               onTap: () {
                 Provider.of<CrimeDataProvider>(
                   context,
@@ -194,8 +185,7 @@ class _MapScreenState extends State<MapScreen>
               },
             ),
             ListTile(
-              leading: Icon(Icons.calendar_today, color: AppTheme.primaryColor),
-              title: Text('Last month'),
+              title: const Text('Last month'),
               onTap: () {
                 Provider.of<CrimeDataProvider>(
                   context,
@@ -204,7 +194,6 @@ class _MapScreenState extends State<MapScreen>
                 Navigator.of(context).pop();
               },
             ),
-            SizedBox(height: 16),
           ],
         ),
       ),
@@ -215,21 +204,14 @@ class _MapScreenState extends State<MapScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: AppTheme.errorColor),
-            SizedBox(width: 10),
-            Text('SOS Activated'),
-          ],
-        ),
-        content: Text(
+        title: const Text('SOS Activated'),
+        content: const Text(
           'Emergency contacts notified!\nRecording started automatically.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('OK', style: TextStyle(color: AppTheme.primaryColor)),
+            child: const Text('OK'),
           ),
         ],
       ),
@@ -256,17 +238,6 @@ class _MapScreenState extends State<MapScreen>
     } else {
       _getCurrentLocation();
     }
-  }
-
-  void _openVideoReport(LatLng location) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        child: VideoReportScreen(location: location),
-      ),
-    );
   }
 
   @override
@@ -342,17 +313,27 @@ class _MapScreenState extends State<MapScreen>
                 right: 16,
                 child: Column(
                   children: [
-                    FloatingActionButton.small(
-                      heroTag: "location",
-                      onPressed: _goToMyLocation,
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      child: Icon(
-                        Icons.my_location,
-                        color: AppTheme.primaryColor,
+                    // Camera Button for Video Recording
+                    FloatingActionButton(
+                      heroTag: "camera",
+                      onPressed: _openVideoReport,
+                      backgroundColor: Colors.blue,
+                      child: const Icon(
+                        Icons.videocam,
+                        color: Colors.white,
+                        size: 28,
                       ),
                     ),
                     SizedBox(height: 16),
+                    // SOS Button
                     SOSButton(onPressed: _triggerSOS),
+                    SizedBox(height: 16),
+                    // Location Button
+                    FloatingActionButton.small(
+                      heroTag: "location",
+                      onPressed: _goToMyLocation,
+                      child: const Icon(Icons.my_location),
+                    ),
                   ],
                 ),
               ),

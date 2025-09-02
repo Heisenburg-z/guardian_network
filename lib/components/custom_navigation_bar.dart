@@ -51,6 +51,7 @@ class CustomNavigationBar extends StatelessWidget {
               selectedIcon: Icon(Icons.report_problem),
               label: 'Reports',
             ),
+            NavigationDestination(icon: Icon(Icons.people), label: 'Community'),
             NavigationDestination(
               icon: Icon(Icons.person_outlined),
               selectedIcon: Icon(Icons.person),

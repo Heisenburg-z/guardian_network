@@ -3,6 +3,7 @@ import 'map_screen.dart';
 import 'alerts_screen.dart';
 import 'reports_screen.dart';
 import 'profile_screen.dart';
+import 'community_screen.dart';
 import '../components/custom_navigation_bar.dart';
 
 class MainScreen extends StatefulWidget {
@@ -22,6 +23,7 @@ class _MainScreenState extends State<MainScreen>
     const MapScreen(),
     const AlertsScreen(),
     const ReportsScreen(),
+    const CommunityScreen(),
     const ProfileScreen(),
   ];
 
