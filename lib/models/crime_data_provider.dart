@@ -3,12 +3,15 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'dart:math' as math;
 import 'crime_incident.dart';
+import 'video_report.dart';
 
 class CrimeDataProvider extends ChangeNotifier {
   List<CrimeIncident> _incidents = [];
+  List<VideoReport> _videoReports = [];
   TimeFilter _timeFilter = TimeFilter.day;
 
   List<CrimeIncident> get allIncidents => _incidents;
+  List<VideoReport> get videoReports => _videoReports;
 
   List<CrimeIncident> get filteredIncidents {
     final now = DateTime.now();
@@ -55,6 +58,8 @@ class CrimeDataProvider extends ChangeNotifier {
           timestamp: timestamp,
           severity: CrimeSeverity.values[random.nextInt(3)],
           description: 'Sample incident for demo',
+          hasVideo: random.nextBool(),
+          isVerified: random.nextBool(),
         ),
       );
     }
@@ -63,6 +68,34 @@ class CrimeDataProvider extends ChangeNotifier {
   void addIncident(CrimeIncident incident) {
     _incidents.insert(0, incident);
     notifyListeners();
+  }
+
+  void addVideoReport(VideoReport report) {
+    _videoReports.insert(0, report);
+
+    // Also create a regular incident for the map
+    addIncident(
+      CrimeIncident(
+        id: report.id,
+        type: report.crimeType,
+        location: report.location,
+        timestamp: report.timestamp,
+        severity: CrimeSeverity.medium,
+        description: report.description,
+        hasVideo: true,
+        isVerified: report.isVerified,
+      ),
+    );
+
+    notifyListeners();
+  }
+
+  VideoReport? getVideoReport(String id) {
+    try {
+      return _videoReports.firstWhere((report) => report.id == id);
+    } catch (e) {
+      return null;
+    }
   }
 
   void setTimeFilter(TimeFilter filter) {

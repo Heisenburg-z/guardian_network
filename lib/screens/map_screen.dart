@@ -10,6 +10,7 @@ import '../components/report_incident_sheet.dart';
 import '../components/sos_button.dart';
 import '../services/location_service.dart';
 import '../theme/app_theme.dart';
+import 'video_report_screen.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -255,6 +256,17 @@ class _MapScreenState extends State<MapScreen>
     } else {
       _getCurrentLocation();
     }
+  }
+
+  void _openVideoReport(LatLng location) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        child: VideoReportScreen(location: location),
+      ),
+    );
   }
 
   @override

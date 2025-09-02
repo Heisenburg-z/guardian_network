@@ -11,6 +11,9 @@ class CrimeIncident {
   final DateTime timestamp;
   final CrimeSeverity severity;
   final String description;
+  final bool hasVideo; // Add this
+  final bool isVerified; // Add this
+  final String? userId; // Add this for anonymous tracking
 
   CrimeIncident({
     required this.id,
@@ -19,5 +22,8 @@ class CrimeIncident {
     required this.timestamp,
     required this.severity,
     required this.description,
+    this.hasVideo = false,
+    this.isVerified = false,
+    this.userId,
   });
 }
