@@ -1,4 +1,4 @@
-package com.example.guardian_network;
+package com.guardian_network;
 
 import io.flutter.embedding.android.FlutterActivity;
 
