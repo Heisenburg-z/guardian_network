@@ -60,7 +60,7 @@ class CrimeDataProvider extends ChangeNotifier {
     final comments = [
       IncidentComment(
         id: '1',
-        incidentId: '0', // Matches sample incident
+        incidentId: '0',
         userId: 'user1',
         userDisplayName: 'SafetyHero',
         content:
@@ -68,6 +68,13 @@ class CrimeDataProvider extends ChangeNotifier {
         timestamp: DateTime.now().subtract(Duration(hours: 2)),
         upvotes: 15,
         downvotes: 2,
+        media: [
+          CommentMedia(
+            type: MediaType.image,
+            url: 'https://example.com/suspect.jpg',
+            caption: 'Security camera footage of suspect',
+          ),
+        ],
       ),
       IncidentComment(
         id: '2',
@@ -79,10 +86,17 @@ class CrimeDataProvider extends ChangeNotifier {
         timestamp: DateTime.now().subtract(Duration(hours: 1)),
         upvotes: 8,
         downvotes: 1,
+        media: [
+          CommentMedia(
+            type: MediaType.video,
+            url: 'https://example.com/camera-location.mp4',
+            caption: 'Location of security cameras',
+          ),
+        ],
       ),
       IncidentComment(
         id: '3',
-        incidentId: '1', // Another incident
+        incidentId: '1',
         userId: 'user3',
         userDisplayName: 'CommunityGuardian',
         content:
@@ -90,6 +104,16 @@ class CrimeDataProvider extends ChangeNotifier {
         timestamp: DateTime.now().subtract(Duration(minutes: 30)),
         upvotes: 5,
         downvotes: 0,
+        media: [
+          CommentMedia(
+            type: MediaType.image,
+            url: 'https://example.com/area1.jpg',
+          ),
+          CommentMedia(
+            type: MediaType.image,
+            url: 'https://example.com/area2.jpg',
+          ),
+        ],
       ),
     ];
     _comments.addAll(comments);

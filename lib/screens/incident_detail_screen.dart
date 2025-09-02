@@ -39,6 +39,7 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                   itemBuilder: (context, index) => CommentCard(
                     comment: comments[index],
                     incident: widget.incident,
+                    onTap: () {},
                     showIncidentInfo: false,
                   ),
                 ),
