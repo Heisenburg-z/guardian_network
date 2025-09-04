@@ -39,8 +39,11 @@ class AuthService {
         password: password,
       );
 
-      // Update display name
+      // Update display name in Firebase Auth
       await result.user?.updateDisplayName(displayName);
+
+      // Update profile to set display name
+      await result.user?.updateProfile(displayName: displayName);
 
       // Create user document in Firestore
       await _createUserDocument(result.user!, displayName, email);
@@ -73,6 +76,19 @@ class AuthService {
           result.user?.displayName ?? 'New User',
           result.user?.email ?? '',
         );
+      } else {
+        // For existing users, ensure the document exists
+        final doc = await _firestore
+            .collection('users')
+            .doc(result.user!.uid)
+            .get();
+        if (!doc.exists) {
+          await _createUserDocument(
+            result.user!,
+            result.user?.displayName ?? 'User',
+            result.user?.email ?? '',
+          );
+        }
       }
 
       return result.user;
@@ -88,25 +104,34 @@ class AuthService {
     String displayName,
     String email,
   ) async {
-    await _firestore.collection('users').doc(user.uid).set({
-      'id': user.uid,
-      'email': email,
-      'displayName': displayName,
-      'photoURL': user.photoURL,
-      'joinDate': FieldValue.serverTimestamp(),
-      'lastActive': FieldValue.serverTimestamp(),
-      'isVerified': false,
-      'contributionScore': 0,
-      'role': 'user',
-      'badges': [],
-      'reportCount': 0,
-      'commentCount': 0,
-      'preferences': {
-        'notifications': true,
-        'alertRadius': 5,
-        'theme': 'system',
-      },
-    });
+    try {
+      await _firestore.collection('users').doc(user.uid).set(
+        {
+          'id': user.uid,
+          'email': email,
+          'displayName': displayName,
+          'photoURL': user.photoURL,
+          'joinDate': FieldValue.serverTimestamp(),
+          'lastActive': FieldValue.serverTimestamp(),
+          'isVerified': false,
+          'contributionScore': 0,
+          'role': 'user',
+          'badges': [],
+          'reportCount': 0,
+          'commentCount': 0,
+          'preferences': {
+            'notifications': true,
+            'alertRadius': 5,
+            'theme': 'system',
+          },
+          'blockedUsers': [],
+        },
+        SetOptions(merge: true),
+      ); // Use merge to avoid overwriting existing data
+    } catch (e) {
+      print("Error creating user document: $e");
+      rethrow;
+    }
   }
 
   // Sign out

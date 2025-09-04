@@ -1,31 +1,112 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AppUser {
   final String id;
   final String? email;
   final String displayName;
   final DateTime joinDate;
+  final DateTime lastActive;
   final bool isVerified;
+  final bool isAnonymous;
   final int contributionScore;
   final String? avatarUrl;
   final UserRole role;
   final List<String> badges;
   final int reportCount;
   final int commentCount;
+  final UserPreferences preferences;
+  final List<String> blockedUsers;
 
   AppUser({
     required this.id,
     this.email,
     required this.displayName,
     required this.joinDate,
+    required this.lastActive,
     this.isVerified = false,
+    this.isAnonymous = false,
     this.contributionScore = 0,
     this.avatarUrl,
     this.role = UserRole.member,
     this.badges = const [],
     this.reportCount = 0,
     this.commentCount = 0,
-  });
+    UserPreferences? preferences,
+    this.blockedUsers = const [],
+  }) : preferences = preferences ?? UserPreferences();
+
+  // Factory constructor from Firestore document
+  factory AppUser.fromMap(Map<String, dynamic> map) {
+    return AppUser(
+      id: map['id'] ?? '',
+      email: map['email'],
+      displayName: map['displayName'] ?? 'User',
+      joinDate: (map['joinDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      lastActive: (map['lastActive'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      isVerified: map['isVerified'] ?? false,
+      isAnonymous: map['isAnonymous'] ?? false,
+      contributionScore: map['contributionScore'] ?? 0,
+      avatarUrl: map['photoURL'] ?? map['avatarUrl'],
+      role: _parseRole(map['role']),
+      badges: List<String>.from(map['badges'] ?? []),
+      reportCount: map['reportCount'] ?? 0,
+      commentCount: map['commentCount'] ?? 0,
+      preferences: _parsePreferences(map['preferences']),
+      blockedUsers: List<String>.from(map['blockedUsers'] ?? []),
+    );
+  }
+
+  static UserRole _parseRole(dynamic role) {
+    if (role == null) return UserRole.member;
+    if (role is String) {
+      switch (role) {
+        case 'admin':
+          return UserRole.admin;
+        case 'moderator':
+          return UserRole.moderator;
+        default:
+          return UserRole.member;
+      }
+    }
+    return UserRole.member;
+  }
+
+  static UserPreferences _parsePreferences(dynamic preferences) {
+    if (preferences is Map<String, dynamic>) {
+      return UserPreferences(
+        notifications: preferences['notifications'] ?? true,
+        alertRadius: (preferences['alertRadius'] ?? 5).toDouble(),
+        theme: preferences['theme'] ?? 'system',
+      );
+    }
+    return UserPreferences();
+  }
+
+  // Convert to map for Firestore
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'email': email,
+      'displayName': displayName,
+      'joinDate': joinDate,
+      'lastActive': lastActive,
+      'isVerified': isVerified,
+      'isAnonymous': isAnonymous,
+      'contributionScore': contributionScore,
+      'photoURL': avatarUrl,
+      'role': role.toString().split('.').last,
+      'badges': badges,
+      'reportCount': reportCount,
+      'commentCount': commentCount,
+      'preferences': {
+        'notifications': preferences.notifications,
+        'alertRadius': preferences.alertRadius,
+        'theme': preferences.theme,
+      },
+      'blockedUsers': blockedUsers,
+    };
+  }
 
   // Factory constructor for demo users
   factory AppUser.demo(String id) {
@@ -34,6 +115,7 @@ class AppUser {
       id: id,
       displayName: demoData['displayName'],
       joinDate: demoData['joinDate'],
+      lastActive: DateTime.now(),
       isVerified: demoData['isVerified'],
       contributionScore: demoData['contributionScore'],
       role: demoData['role'],
@@ -140,26 +222,34 @@ class AppUser {
     String? email,
     String? displayName,
     DateTime? joinDate,
+    DateTime? lastActive,
     bool? isVerified,
+    bool? isAnonymous,
     int? contributionScore,
     String? avatarUrl,
     UserRole? role,
     List<String>? badges,
     int? reportCount,
     int? commentCount,
+    UserPreferences? preferences,
+    List<String>? blockedUsers,
   }) {
     return AppUser(
       id: id ?? this.id,
       email: email ?? this.email,
       displayName: displayName ?? this.displayName,
       joinDate: joinDate ?? this.joinDate,
+      lastActive: lastActive ?? this.lastActive,
       isVerified: isVerified ?? this.isVerified,
+      isAnonymous: isAnonymous ?? this.isAnonymous,
       contributionScore: contributionScore ?? this.contributionScore,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       role: role ?? this.role,
       badges: badges ?? this.badges,
       reportCount: reportCount ?? this.reportCount,
       commentCount: commentCount ?? this.commentCount,
+      preferences: preferences ?? this.preferences,
+      blockedUsers: blockedUsers ?? this.blockedUsers,
     );
   }
 
@@ -178,8 +268,18 @@ class AppUser {
   int get hashCode => id.hashCode;
 }
 
+class UserPreferences {
+  final bool notifications;
+  final double alertRadius;
+  final String theme;
+
+  UserPreferences({
+    this.notifications = true,
+    this.alertRadius = 5.0,
+    this.theme = 'system',
+  });
+}
+
 enum UserRole { member, moderator, admin }
 
 enum UserLevel { beginner, intermediate, advanced, expert }
-
-//192

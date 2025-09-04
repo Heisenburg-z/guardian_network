@@ -34,16 +34,22 @@ class GuardianNetworkApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // Auth Service (not change notifier, so use Provider)
+        // Auth Service
         Provider<AuthService>(create: (_) => AuthService()),
 
-        // User Provider (change notifier)
+        // User Provider with initialization
         ChangeNotifierProvider<UserProvider>(
-          create: (_) => UserProvider(),
-          lazy: false, // Add this to ensure it's created immediately
+          create: (context) {
+            final userProvider = UserProvider();
+            // Initialize after a small delay to ensure Firebase is ready
+            Future.delayed(const Duration(milliseconds: 100), () {
+              userProvider.initialize();
+            });
+            return userProvider;
+          },
         ),
 
-        // Crime Data Provider (your existing provider)
+        // Crime Data Provider
         ChangeNotifierProvider<CrimeDataProvider>(
           create: (context) => CrimeDataProvider(),
         ),

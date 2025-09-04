@@ -8,11 +8,16 @@ import '../models/app_user.dart';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
+  // Update the build method in ProfileScreen
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
     final authService = Provider.of<AuthService>(context);
     final user = userProvider.user;
+
+    // Check if we have a Firebase user but no user data yet
+    final hasFirebaseUser = authService.currentUser != null;
+    final hasUserData = user != null && user.displayName.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -27,14 +32,16 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: user == null
-          ? const Center(child: CircularProgressIndicator())
+      body: !hasFirebaseUser
+          ? const Center(child: Text('No user logged in'))
+          : !hasUserData
+          ? _buildLoadingState()
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildUserHeader(user),
+                  _buildUserHeader(user!),
                   const SizedBox(height: 24),
                   _buildUserStats(user),
                   const SizedBox(height: 24),
@@ -44,6 +51,19 @@ class ProfileScreen extends StatelessWidget {
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text('Setting up your profile...'),
+        ],
+      ),
     );
   }
 
