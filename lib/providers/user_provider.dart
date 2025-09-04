@@ -115,4 +115,10 @@ class UserProvider with ChangeNotifier {
     _userSubscription?.cancel();
     super.dispose();
   }
+
+  // Add
+  void updateUser(AppUser updatedUser) {
+    _user = updatedUser;
+    notifyListeners();
+  }
 }

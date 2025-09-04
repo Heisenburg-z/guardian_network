@@ -278,6 +278,18 @@ class UserPreferences {
     this.alertRadius = 5.0,
     this.theme = 'system',
   });
+
+  UserPreferences copyWith({
+    bool? notifications,
+    double? alertRadius,
+    String? theme,
+  }) {
+    return UserPreferences(
+      notifications: notifications ?? this.notifications,
+      alertRadius: alertRadius ?? this.alertRadius,
+      theme: theme ?? this.theme,
+    );
+  }
 }
 
 enum UserRole { member, moderator, admin }
