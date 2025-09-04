@@ -53,14 +53,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final File imageFile = File(image.path);
         final userProvider = Provider.of<UserProvider>(context, listen: false);
 
+        print('Starting upload for user: ${userProvider.user!.id}');
+
         // Upload to Firebase Storage
         final Reference storageRef = FirebaseStorage.instance.ref().child(
           'users/${userProvider.user!.id}/profile.jpg',
         );
 
-        final UploadTask uploadTask = storageRef.putFile(imageFile);
+        print('Storage reference created: ${storageRef.fullPath}');
+
+        // Add metadata and handle upload state
+        final SettableMetadata metadata = SettableMetadata(
+          contentType: 'image/jpeg',
+          customMetadata: {'uploaded_by': userProvider.user!.id},
+        );
+
+        final UploadTask uploadTask = storageRef.putFile(imageFile, metadata);
+
+        // Listen to upload state changes
+        uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+          print(
+            'Upload progress: ${snapshot.bytesTransferred}/${snapshot.totalBytes}',
+          );
+        });
+
+        // Wait for upload to complete
         final TaskSnapshot snapshot = await uploadTask;
+        print('Upload completed successfully');
+
+        // Get download URL
         final String downloadUrl = await snapshot.ref.getDownloadURL();
+        print('Download URL: $downloadUrl');
 
         // Update user document in Firestore
         await FirebaseFirestore.instance
@@ -70,6 +93,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               'photoURL': downloadUrl,
               'lastActive': FieldValue.serverTimestamp(),
             });
+
+        print('Firestore document updated');
 
         // Update local user data
         userProvider.updateUser(
@@ -83,6 +108,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
     } catch (e) {
+      print('Error uploading profile picture: $e');
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error uploading image: $e')));
