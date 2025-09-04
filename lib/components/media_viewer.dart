@@ -21,6 +21,7 @@ class MediaViewer extends StatelessWidget {
     );
   }
 
+  //
   Widget _buildSingleMedia(CommentMedia mediaItem) {
     switch (mediaItem.type) {
       case MediaType.image:

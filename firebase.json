@@ -1,1 +1,41 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"guardian-network-89362","appId":"1:741440698616:android:1842fc7698d7cd1248230d","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"guardian-network-89362","appId":"1:741440698616:ios:969b163132f820b048230d","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"guardian-network-89362","appId":"1:741440698616:ios:b08bdac6beb3b22a48230d","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"guardian-network-89362","configurations":{"android":"1:741440698616:android:1842fc7698d7cd1248230d","ios":"1:741440698616:ios:969b163132f820b048230d","macos":"1:741440698616:ios:b08bdac6beb3b22a48230d","web":"1:741440698616:web:8f5d00c67291157848230d","windows":"1:741440698616:web:a5133cc2cd394e1048230d"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "guardian-network-89362",
+          "appId": "1:741440698616:android:1842fc7698d7cd1248230d",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "guardian-network-89362",
+          "appId": "1:741440698616:ios:969b163132f820b048230d",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "guardian-network-89362",
+          "appId": "1:741440698616:ios:b08bdac6beb3b22a48230d",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "guardian-network-89362",
+          "configurations": {
+            "android": "1:741440698616:android:1842fc7698d7cd1248230d",
+            "ios": "1:741440698616:ios:969b163132f820b048230d",
+            "macos": "1:741440698616:ios:b08bdac6beb3b22a48230d",
+            "web": "1:741440698616:web:8f5d00c67291157848230d",
+            "windows": "1:741440698616:web:a5133cc2cd394e1048230d"
+          }
+        }
+      }
+    }
+  }
+}

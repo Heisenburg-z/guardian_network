@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "741440698616",
+    "project_id": "guardian-network-89362",
+    "storage_bucket": "guardian-network-89362.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:741440698616:android:9861b9f04fb8cd6548230d",
+        "android_client_info": {
+          "package_name": "com.example.guardian_network"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "741440698616-jat3g3bgemsa7a19vlgtoion6t9uo55t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHAEtgHSNd1fQgfYaDkxj14hJPeRNQPD8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "741440698616-jat3g3bgemsa7a19vlgtoion6t9uo55t.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "741440698616-5nh965idr7khfete52simiqu800r802m.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.guardian.network"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:741440698616:android:1842fc7698d7cd1248230d",
+        "android_client_info": {
+          "package_name": "com.guardian.network"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "741440698616-jat3g3bgemsa7a19vlgtoion6t9uo55t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHAEtgHSNd1fQgfYaDkxj14hJPeRNQPD8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "741440698616-jat3g3bgemsa7a19vlgtoion6t9uo55t.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "741440698616-5nh965idr7khfete52simiqu800r802m.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.guardian.network"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
